@@ -2,10 +2,13 @@ import { Game } from './engine/game.ts'
 import { bindKeyboard } from './input.ts'
 import { arena } from './levels/arena.ts'
 import { createRenderer } from './renderer.ts'
+import { ScoreBoard } from './components/score-board.ts'
+import { XTimer } from './components/x-timer.ts'
 
 const canvas = document.querySelector<HTMLCanvasElement>('#arena')
-const score = document.querySelector<HTMLElement>('#score')
+const score = document.querySelector<ScoreBoard>('score-board')
 const message = document.querySelector<HTMLElement>('#message')
+const timer = document.querySelector<XTimer>('x-timer')
 if (canvas === null || score === null || message === null) throw new Error('Page incomplète')
 
 const PLAYER_ID = 'p1'
@@ -17,11 +20,14 @@ bindKeyboard(game, PLAYER_ID)
 
 game.events.on('tick', draw)
 game.events.on('start', () => {
-  score.textContent = 'Score : 0'
+  score.value = 0
+  timer?.reset()
+  timer?.start()
   message.textContent = 'Flèches ou ZQSD pour tourner'
 })
 game.events.on('score', ({ score: value }) => {
-  score.textContent = `Score : ${value}`
+  score.value = value
+  timer?.stop()
 })
 game.events.on('over', (state) => {
   const [player] = state.players
