@@ -6,6 +6,7 @@
 // Ordre conseillé : opposite → nextHead → isFree → freeCells → spawnTarget → movePlayer.
 
 import {
+  BASE_LENGTH,
   TARGET_COUNT,
   type Direction,
   type GameState,
@@ -17,9 +18,7 @@ import {
 } from './types.ts'
 
 /** Marqueur de travail à faire : lève une erreur explicite. À supprimer une fois la fonction écrite. */
-function todo(name: string, ..._args: unknown[]): never {
-  throw new Error(`TODO : ${name} n'est pas encore implémentée`)
-}
+
 
 /**
  * Direction opposée : on ne peut pas faire demi‑tour sur place.
@@ -129,7 +128,32 @@ export function spawnTarget(state: GameState, random: () => number): GameState {
  * Indice : `{ ...player, direction, trail, score }` construit le nouveau joueur.
  */
 export function movePlayer(state: GameState, player: Player, wanted: Direction | undefined): Player {
-  return todo('movePlayer', state, player, wanted)
+  // 1. Si le joueur est mort, on ne fait rien
+  if (!player.alive) return player
+
+  // 2. On détermine la direction
+  const direction =
+    wanted && wanted !== opposite(player.direction)
+      ? wanted
+      : player.direction
+
+  // 3. On calcule la prochaine position
+  const head = nextHead(player.trail[0], direction)
+
+  // 4. Si la case n'est pas libre, le joueur meurt
+  if (!isFree(state, head)) {
+    return { ...player, direction, alive: false }
+  }
+
+  // 5. On vérifie si le joueur mange une cible
+  const ateTarget = state.targets.some(target => samePoint(target, head))
+  const score = player.score + (ateTarget ? 1 : 0)
+
+  // 6. On construit la nouvelle trace
+  const trail = [head, ...player.trail].slice(0, BASE_LENGTH + score)
+
+  // 7. On retourne le nouveau joueur
+  return { ...player, direction, trail, score }
 }
 
 /** Complète les cibles jusqu'à TARGET_COUNT (sans faire avancer personne). */
