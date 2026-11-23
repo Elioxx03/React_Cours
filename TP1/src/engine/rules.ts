@@ -106,7 +106,14 @@ export function freeCells(state: GameState): Point[] {
  * Indice : `Math.floor(random() * cells.length)` puis `{ ...state, targets: [...state.targets, cell] }`.
  */
 export function spawnTarget(state: GameState, random: () => number): GameState {
-  return todo('spawnTarget', state, random)
+  const cells = freeCells(state)
+
+  if (cells.length === 0) return state
+
+  const index = Math.floor(random() * cells.length)
+  const cell = cells[index]
+
+  return { ...state, targets: [...state.targets, cell] }
 }
 
 /**
